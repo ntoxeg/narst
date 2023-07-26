@@ -1,3 +1,4 @@
+//! Memory structures
 use crate::nal::TruthValue;
 use serde::{Deserialize, Serialize};
 use serde_json;
