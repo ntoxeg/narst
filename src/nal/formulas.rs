@@ -70,46 +70,46 @@ fn truth_analogy(f1: f32, c1: f32, f2: f32, c2: f32) -> TruthValue {
 }
 
 // (= (Truth_Resemblance ($f1 $c1) ($f2 $c2)) ((* $f1 $f2) (* (* $c1 $c2) (Truth_or $f1 $f2))))
-fn truth_resemblance(f1: f32, c1: f32, f2: f32, c2: f32) -> (f32, f32) {
-    (f1 * f2, c1 * c2 * truth_or(f1, f2))
+fn truth_resemblance(f1: f32, c1: f32, f2: f32, c2: f32) -> TruthValue {
+    TruthValue::new(f1 * f2, c1 * c2 * truth_or(f1, f2))
 }
 
 // (= (Truth_Union ($f1 $c1) ($f2 $c2)) ((Truth_or $f1 $f2) (* $c1 $c2)))
-fn truth_union(f1: f32, c1: f32, f2: f32, c2: f32) -> (f32, f32) {
-    (truth_or(f1, f2), c1 * c2)
+fn truth_union(f1: f32, c1: f32, f2: f32, c2: f32) -> TruthValue {
+    TruthValue::new(truth_or(f1, f2), c1 * c2)
 }
 
 // (= (Truth_Difference ($f1 $c1) ($f2 $c2)) ((* $f1 (- 1 $f2)) (* $c1 $c2)))
-fn truth_difference(f1: f32, c1: f32, f2: f32, c2: f32) -> (f32, f32) {
-    (f1 * (1.0 - f2), c1 * c2)
+fn truth_difference(f1: f32, c1: f32, f2: f32, c2: f32) -> TruthValue {
+    TruthValue::new(f1 * (1.0 - f2), c1 * c2)
 }
 
 // (= (Truth_DecomposePNN ($f1 $c1) ($f2 $c2)) (let $fn (* $f1 (- 1 $f2)) ((- 1 $fn) (* $fn (* $c1 $c2)))))
-fn truth_decompose_pnn(f1: f32, c1: f32, f2: f32, c2: f32) -> (f32, f32) {
+fn truth_decompose_pnn(f1: f32, c1: f32, f2: f32, c2: f32) -> TruthValue {
     let fn_ = f1 * (1.0 - f2);
-    (1.0 - fn_, fn_ * c1 * c2)
+    TruthValue::new(1.0 - fn_, fn_ * c1 * c2)
 }
 
 // (= (Truth_DecomposeNPP ($f1 $c1) ($f2 $c2)) (let $f (* (- 1 $f1) $f2) ($f (* $f (* $c1 $c2)))))
-fn truth_decompose_npp(f1: f32, c1: f32, f2: f32, c2: f32) -> (f32, f32) {
+fn truth_decompose_npp(f1: f32, c1: f32, f2: f32, c2: f32) -> TruthValue {
     let f = (1.0 - f1) * f2;
-    (f, f * c1 * c2)
+    TruthValue::new(f, f * c1 * c2)
 }
 
 // (= (Truth_DecomposePNP ($f1 $c1) ($f2 $c2)) (let $f (* $f1 (- 1 $f2)) ($f (* $f (* $c1 $c2)))))
-fn truth_decompose_pnp(f1: f32, c1: f32, f2: f32, c2: f32) -> (f32, f32) {
+fn truth_decompose_pnp(f1: f32, c1: f32, f2: f32, c2: f32) -> TruthValue {
     let f = f1 * (1.0 - f2);
-    (f, f * c1 * c2)
+    TruthValue::new(f, f * c1 * c2)
 }
 
 // (= (Truth_DecomposePPP $v1 $v2) (Truth_DecomposeNPP (Truth_Negation $v1) $v2))
-fn truth_decompose_ppp(f1: f32, c1: f32, f2: f32, c2: f32) -> (f32, f32) {
+fn truth_decompose_ppp(f1: f32, c1: f32, f2: f32, c2: f32) -> TruthValue {
     let negtv = truth_negation(f1, c1);
     truth_decompose_npp(negtv.strength(), negtv.confidence(), f2, c2)
 }
 
 // (= (Truth_DecomposeNNN ($f1 $c1) ($f2 $c2)) (let $fn (* (- 1 $f1) (- 1 $f2)) ((- 1 $fn) (* $fn (* $c1 $c2)))))
-fn truth_decompose_nnn(f1: f32, c1: f32, f2: f32, c2: f32) -> (f32, f32) {
+fn truth_decompose_nnn(f1: f32, c1: f32, f2: f32, c2: f32) -> TruthValue {
     let fn_ = (1.0 - f1) * (1.0 - f2);
-    (1.0 - fn_, fn_ * c1 * c2)
+    TruthValue::new(1.0 - fn_, fn_ * c1 * c2)
 }
