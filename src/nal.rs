@@ -1,4 +1,5 @@
 //! Non-Axiomatic Logic fuctionality
+pub mod formulas;
 pub mod parser;
 
 use nom::sequence::Tuple;
