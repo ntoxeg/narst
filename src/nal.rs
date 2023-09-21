@@ -1,11 +1,11 @@
 //! Non-Axiomatic Logic fuctionality
 pub mod formulas;
 pub mod parser;
+pub mod rules;
 
-use nom::sequence::Tuple;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
 struct EvidentialValue {
     s: f32,
     c: f32,
@@ -41,7 +41,7 @@ impl EvidentialValue {
 /// # Panics
 /// The strength / frequency must lie in the interval [0.0; 1.0].
 /// The confidence must lie in the interval [0.0; 1.0).
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct TruthValue {
     ev: EvidentialValue,
 }
@@ -52,13 +52,13 @@ impl TruthValue {
             ev: EvidentialValue::new(strength, confidence),
         }
     }
-
     pub fn strength(&self) -> f32 {
         self.ev.s
     }
     pub fn confidence(&self) -> f32 {
         self.ev.c
     }
+
     fn from(maybe_tvstr: Option<(&str, &str)>) -> Option<TruthValue> {
         maybe_tvstr.and_then(|(s, c)| {
             let strength = s.parse::<f32>().ok()?;
@@ -75,7 +75,7 @@ impl TruthValue {
 /// # Panics
 /// The strength / frequency must lie in the interval [0.0; 1.0].
 /// The confidence must lie in the interval [0.0; 1.0).
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Copy, Serialize, Deserialize)]
 pub struct DesireValue {
     ev: EvidentialValue,
 }
@@ -125,21 +125,21 @@ impl Tense {
 
 #[derive(Serialize, Deserialize)]
 pub struct Judgement {
-    pub term: AtomicTerm,
+    pub term: Term,
     pub tv: TruthValue,
     pub tense: Tense,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct Question {
-    pub term: AtomicTerm,
+    pub term: Term,
     pub tv: TruthValue,
     pub tense: Tense,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct Goal {
-    pub term: AtomicTerm,
+    pub term: Term,
     pub d: DesireValue,
     pub tense: Tense,
 }
@@ -155,10 +155,19 @@ impl Sentence {
     pub fn from(sttv: ((&str, &str), Tense, Option<(&str, &str)>)) -> Result<Self, String> {
         let ((expr, pstr), tense, tvstr) = sttv;
 
-        let term = Term::Atom(TermInfo {
-            id: 0,
-            expr: String::from(expr),
-        });
+        // let term = Term::Atom(TermInfo {
+        //     id: 0,
+        //     expr: String::from(expr),
+        // });
+        let term = Term {
+            info: TermInfo {
+                id: 0,
+                expr: String::from(expr),
+                tv: TruthValue {
+                    ev: EvidentialValue { s: 1.0, c: 0.9 },
+                },
+            },
+        };
         let punctuation = pstr.chars().last();
         let tv = TruthValue::from(tvstr).unwrap_or(TruthValue::new(1.0, 0.5));
         match punctuation {
@@ -177,25 +186,22 @@ impl Sentence {
 // terms
 
 #[derive(Serialize, Deserialize)]
-struct TermInfo {
+pub struct TermInfo {
     pub id: u32,
     pub expr: String,
+    pub tv: TruthValue,
 }
+
+// #[derive(Serialize, Deserialize)]
+// pub enum Term {
+//     Atom(TermInfo),
+//     Compound(TermInfo),
+// }
 
 #[derive(Serialize, Deserialize)]
-pub enum Term {
-    Atom(TermInfo),
-    Compound(TermInfo),
+pub struct Term {
+    pub info: TermInfo,
 }
-// pub struct AtomicTerm {
-// info: TermInfo,
-// }
-
-// impl Term {
-//     pub fn new(expr: &str) -> Self { Self { info: TermInfo { id: 0, expr: String::from(expr) } } }
-
-//     pub fn name(&self) -> &str { &self.info.expr }
-// }
 
 enum VarT {
     Independent,
